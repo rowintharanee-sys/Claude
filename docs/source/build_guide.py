@@ -567,10 +567,10 @@ def build_html():
 {logo}
 <p class="eyebrow">Merchant guide · Second dispute cycle</p>
 <h1>After the first dispute outcome</h1>
-<p class="lede">Most merchants understand the first round of a dispute: a chargeback arrives,
-you send evidence, you win or you lose. What is far less well understood is what happens
-after that first outcome — the second dispute cycle, made up of pre-arbitration and
-arbitration.</p>
+<p class="lede">The first round of a dispute is familiar to most merchants: a chargeback
+arrives, you send evidence, and the issuer accepts or rejects it. If it’s rejected, the dispute
+can move into a second cycle, made up of pre-arbitration and arbitration, which works
+differently for each card scheme.</p>
 <p>This is where a large share of recoverable revenue is won or lost, for three reasons:</p>
 <ol class="points">
   <li><strong>The clocks are short.</strong> The windows in the second dispute cycle are measured
