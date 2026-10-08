@@ -12,9 +12,6 @@ merchant collateral: Inter / Inter Tight / Roboto Mono, Checkout blue on warm gr
 Needs Python 3 with Pillow, Node.js with Puppeteer, Chromium and fontconfig. Inter must be
 installed; Inter Tight and Roboto Mono ship in source/fonts and are installed for the
 current user on first run. Override paths with INTER_DIR, CHROME_PATH, PUPPETEER_PATH.
-
-Set MANAGED_RECOVERY=0 to leave out the Managed Recovery note, for merchants who have not
-been offered that service.
 """
 import base64
 import html
@@ -33,7 +30,6 @@ INTER_DIR = pathlib.Path(os.environ.get("INTER_DIR", "/usr/share/fonts/opentype/
 CHROME = os.environ.get("CHROME_PATH", "/opt/pw-browsers/chromium-1194/chrome-linux/chrome")
 PUPPETEER = os.environ.get(
     "PUPPETEER_PATH", "/root/.npm/_npx/668c188756b835f3/node_modules/puppeteer")
-MANAGED_RECOVERY = os.environ.get("MANAGED_RECOVERY", "1") != "0"
 
 SANS = "Inter, Arial, sans-serif"
 TIGHT = "'Inter Tight', Inter, Arial, sans-serif"
@@ -51,13 +47,6 @@ WARM, LINE, BOX_LINE, ARROW = "#f4f2f2", "#edeaea", "#d9d5d4", "#8a8382"
 # ----------------------------------------------------------------------------------------
 YOU, ISSUER, SCHEME = 0, 1, 2
 
-RECOVERY_NOTE = dict(
-    eyebrow="Checkout.com Managed Recovery",
-    text="Rather not do step 4 yourself? Once your 5–10 days have passed, we can take "
-         "selected high-value cases through the second cycle for you. You pay only when "
-         "we win.")
-
-
 def _two_cycle_flow(*, slug, title, subtitle, scheme_lane, open_term, response_term,
                     escalate_days, arbitration_body, final_text):
     """Visa Collaboration, Discover / Diners and Mastercard share one shape."""
@@ -74,15 +63,13 @@ def _two_cycle_flow(*, slug, title, subtitle, scheme_lane, open_term, response_t
             dict(lane=ISSUER, step=3, code="RPDL", title="Pre-arbitration",
                  body="The issuer rejects our evidence"),
             dict(lane=YOU, step=4, title="Pre-arbitration response",
-                 body="We challenge the rejection", clock="5–10 days",
+                 body="We challenge the rejection",
                  end="Or you accept → the chargeback stands"),
             dict(lane=ISSUER, step=5, title="Arbitration decision",
                  body="Accepts liability or takes the case to arbitration",
                  clock=escalate_days, end="Accepts liability → case closed in your favour"),
             dict(lane=SCHEME, span=2, title="Arbitration", body=arbitration_body),
         ],
-        # Sits in the empty part of the "You" row, after step 4.
-        note=dict(RECOVERY_NOTE, lane=YOU, col=5, span=2) if MANAGED_RECOVERY else None,
         steps=[
             ("Initial chargeback", open_term, "ADJM",
              "The cardholder's issuing bank raises the dispute."),
@@ -92,8 +79,8 @@ def _two_cycle_flow(*, slug, title, subtitle, scheme_lane, open_term, response_t
              "The issuer has 30 days to review. If it rejects our evidence, it raises a "
              "pre-arbitration."),
             ("Formal rebuttal", "Pre-arbitration response", None,
-             "We formally challenge the rejection. You usually have 5–10 days to ask us to, "
-             "or you can accept the chargeback."),
+             "We formally challenge the rejection. You can also choose to accept the "
+             "chargeback at this point."),
             ("Final resolution", "Arbitration", None, final_text),
         ],
     )
@@ -124,7 +111,7 @@ DIAGRAMS = [
     dict(
         slug="3-visa-allocation",
         title="Visa Allocation",
-        subtitle="Fraud (10.x) and authorisation (11.x) disputes · "
+        subtitle="Fraud (10.x) and authorization (11.x) disputes · "
                  "you decide on arbitration, not the issuer",
         lanes=["You & Checkout", "Issuer", "Visa"],
         nodes=[
@@ -143,10 +130,9 @@ DIAGRAMS = [
                  body=f"We file with Visa. Visa's ruling is final, and the losing party pays "
                       f"the fee ({FEE})"),
         ],
-        note=None,
         steps=[
             ("Initial chargeback", "Dispute", "ADJM",
-             "The cardholder's issuing bank raises a fraud or authorisation dispute."),
+             "The cardholder's issuing bank raises a fraud or authorization dispute."),
             ("Our response", "Pre-arbitration", "RPDR",
              "We challenge the dispute with your evidence by raising a pre-arbitration. "
              "You have 20 days to send it to us."),
@@ -163,11 +149,11 @@ DIAGRAMS = [
 
 STATUS_CODES = [
     ("ADJM", "Chargeback received"),
-    ("RPDR", "Represented: we submitted your evidence. In Visa Allocation, pre-arbitration "
-             "raised"),
+    ("RPDR", "Represented: we submitted your evidence. For Visa Allocation, we initiated "
+             "pre-arbitration"),
     ("RPDW", "Representment won"),
-    ("RPDL", "Representment lost: the issuer's pre-arbitration. In Visa Allocation, its "
-             "pre-arbitration response"),
+    ("RPDL", "Representment lost: the issuer's pre-arbitration. For Visa Allocation, it "
+             "refers to the issuer's pre-arbitration response"),
 ]
 
 # ----------------------------------------------------------------------------------------
@@ -308,12 +294,6 @@ def _layout(spec):
             n["el"] = wrap(n["end"], P_FS, BW - 2 * PX)
             n["eh"] = 2 * PY + len(n["el"]) * P_LH + (1.4 if n.get("end_code") else 0)
 
-    note = dict(spec["note"]) if spec.get("note") else None
-    if note:
-        note["x"] = col_x(note["col"])
-        note["w"] = note["span"] * BW + (note["span"] - 1) * GAP
-        note["tl"] = wrap(note["text"], B_FS, note["w"] - 2 * 3.0)
-        note["h"] = 3.2 + 3.0 + 2.2 + len(note["tl"]) * B_LH + 2.6
 
     lanes, y = [], 0.0
     for li in range(3):
@@ -321,16 +301,13 @@ def _layout(spec):
         box_h = max(n["h"] for n in mine)
         pill_h = max((n["eh"] for n in mine if n.get("end")), default=0.0)
         h = LANE_TOP + box_h + (PILL_GAP + pill_h if pill_h else 0.0) + LANE_BOT
-        if note and note["lane"] == li:
-            h = max(h, LANE_TOP + note["h"] + LANE_BOT)
-            note["y"] = y + LANE_TOP
         for n in mine:          # one height per lane keeps each row tidy
             n["y"], n["h"] = y + LANE_TOP, box_h
             if n.get("end"):
                 n["ey"], n["eh"] = y + LANE_TOP + box_h + PILL_GAP, pill_h
         lanes.append((y, h))
         y += h
-    return nodes, note, lanes, y
+    return nodes, lanes, y
 
 
 def _route(a, b, r=1.5):
@@ -392,7 +369,7 @@ def _logo_data_uri():
 
 
 def diagram_svg(spec, standalone=False):
-    nodes, note, lanes, lanes_h = _layout(spec)
+    nodes, lanes, lanes_h = _layout(spec)
     top = 16.0 if standalone else 0.0
     out = []
 
@@ -426,8 +403,6 @@ def diagram_svg(spec, standalone=False):
         n["y"] += top
         if n.get("end"):
             n["ey"] += top
-    if note:
-        note["y"] += top
 
     # Flow arrows, drawn first so boxes sit on top of them.
     arrow = f'stroke="{ARROW}" stroke-width="0.32" fill="none" marker-end="url(#ah)"'
@@ -470,17 +445,6 @@ def diagram_svg(spec, standalone=False):
             if n.get("end_code"):
                 out.append(_code(x + BW - 4.0, ey + eh, n["end_code"]))
 
-    if note:
-        x, y = note["x"], note["y"]
-        out.append(f'<rect x="{x:.2f}" y="{y:.2f}" width="{note["w"]:.2f}" '
-                   f'height="{note["h"]:.2f}" rx="2" fill="{BLUE_TINT}" stroke="{BLUE_LINE}" '
-                   f'stroke-width="0.3"/>')
-        out.append(_t(x + 3.0, y + 3.2 + 1.8, note["eyebrow"].upper(), 2.15, 500, BLUE,
-                      family="mono", spacing=0.22))
-        by = y + 3.2 + 3.0 + 2.2 + B_FS * 0.6
-        for i, line in enumerate(note["tl"]):
-            out.append(_t(x + 3.0, by + i * B_LH, line, B_FS, 400, INK2))
-
     height = top + lanes_h
     if standalone:
         logo_w = 30.0
@@ -516,7 +480,7 @@ strong {{ font-weight: 600; color: {INK}; }}
             color: {BLUE}; margin: 0 0 7px; }}
 h1 {{ font-family: {TIGHT}; font-size: 25pt; line-height: 1.1; letter-spacing: -.02em;
       font-weight: 600; color: {INK}; margin: 0 0 8px; }}
-.lede {{ font-size: 10.8pt; color: {INK2}; max-width: 158mm; margin-bottom: 22px; }}
+.lede {{ font-size: 10.8pt; color: {INK2}; margin-bottom: 12px; }}
 h2 {{ font-family: {TIGHT}; font-size: 14.5pt; font-weight: 600; letter-spacing: -.01em;
       color: {INK}; margin: 0 0 9px; }}
 .section {{ margin-bottom: 22px; }}
@@ -529,14 +493,14 @@ ol.points li::before {{ content: counter(p); position: absolute; left: 0; top: 1
                         color: #fff; font-family: {MONO}; font-size: 8.5pt; font-weight: 600;
                         text-align: center; line-height: 19px; }}
 
-.cards {{ display: grid; grid-template-columns: 1fr 1fr; gap: 4mm; }}
-.card {{ border: 1px solid #e4e4e4; border-radius: 9px; padding: 11px 14px 12px;
+.cards {{ display: grid; grid-template-columns: repeat(4, 1fr); gap: 3.5mm; }}
+.card {{ border: 1px solid #e4e4e4; border-radius: 9px; padding: 10px 11px 10px;
          box-shadow: 0 1px 3px rgba(24, 24, 24, .04); }}
 .card .k {{ font-family: {MONO}; font-size: 7.4pt; letter-spacing: .12em;
             text-transform: uppercase; color: {INK3}; margin: 0 0 3px; }}
-.card .v {{ font-family: {MONO}; font-size: 18pt; font-weight: 600; color: {BLUE};
+.card .v {{ font-family: {MONO}; font-size: 15pt; font-weight: 600; color: {BLUE};
             letter-spacing: -.01em; line-height: 1.2; margin: 0 0 3px; }}
-.card .d {{ font-size: 9.2pt; color: {INK2}; line-height: 1.4; }}
+.card .d {{ font-size: 8.6pt; color: {INK2}; line-height: 1.4; margin: 0; }}
 
 .page-break {{ break-before: page; }}
 .intro2 {{ color: {INK2}; margin-bottom: 11px; }}
@@ -547,7 +511,7 @@ th small {{ display: block; font-weight: 400; color: {INK3}; font-size: 8pt; mar
 td:first-child {{ width: 31%; color: #2e2a29; }}
 td:first-child small {{ display: block; color: {INK3}; font-size: 8pt; }}
 td.term {{ font-weight: 600; color: {INK}; }}
-td.none {{ color: {INK3}; font-style: italic; }}
+td.term small {{ display: block; font-weight: 400; color: {INK3}; font-size: 8pt; }}
 tr.key td {{ background: {BLUE_TINT}; }}
 tr.key td.you {{ color: {BLUE}; font-weight: 600; }}
 .code {{ display: inline-block; font-family: {MONO}; font-size: 7.6pt; font-weight: 500;
@@ -563,8 +527,17 @@ td:first-child .code {{ margin-left: 5px; }}
              font-size: 9pt; }}
 .codes dt {{ margin: 0; }} .codes dd {{ margin: 0; color: #2e2a29; }}
 
-ul.know {{ padding-left: 17px; margin: 0; }}
-ul.know li {{ margin-bottom: 6px; }}
+.readon {{ color: {INK2}; margin: 4px 0 20px; }}
+.summary {{ display: grid; grid-template-columns: 1fr 1fr; gap: 4mm; margin: 0 0 4mm; }}
+.sum {{ border: 1px solid #e4e4e4; border-radius: 9px; padding: 11px 13px 4px;
+         box-shadow: 0 1px 3px rgba(24, 24, 24, .04); }}
+.sum .eyebrow {{ margin-bottom: 9px; line-height: 1.45; }}
+ol.points.small li {{ font-size: 9pt; line-height: 1.45; padding-left: 25px;
+                       margin-bottom: 8px; }}
+ol.points.small li::before {{ width: 16px; height: 16px; line-height: 16px;
+                               font-size: 7.6pt; }}
+.diff {{ border: 1px solid {BLUE_LINE}; background: {BLUE_TINT}; border-radius: 9px;
+          padding: 10px 14px; font-size: 9.6pt; }}
 
 .diagram-page {{ page: land; break-before: page; }}
 .diagram-page .eyebrow {{ margin-bottom: 4px; }}
@@ -596,45 +569,82 @@ def build_html():
 {logo}
 <p class="eyebrow">Merchant guide · Second dispute cycle</p>
 <h1>After the first dispute outcome</h1>
-<p class="lede">When your first response doesn't settle a dispute, the case can move into a
-second cycle: pre-arbitration and, if needed, arbitration with the card scheme. This guide
-shows, for each scheme, who has to act at each stage and how long they have.</p>
-
-<div class="section">
-<h2>Three things to know</h2>
+<p class="lede">Most merchants understand the first round of a dispute: a chargeback arrives,
+you send evidence, you win or you lose. What is far less well understood is what happens
+after that first outcome — the second dispute cycle, made up of pre-arbitration and
+arbitration.</p>
+<p>This is where a large share of recoverable revenue is won or lost, for three reasons:</p>
 <ol class="points">
-  <li><strong>The next move depends on the scheme.</strong> In most flows, the issuer decides
-  whether a case goes to arbitration. In Visa Allocation (fraud and authorisation disputes),
-  that decision is yours.</li>
-  <li><strong>The windows are short.</strong> After the issuer rejects our evidence, you
-  usually have 5–10 days to ask us to escalate, and the scheme deadline for arbitration is
-  10 to 15 days.</li>
-  <li><strong>Arbitration has a cost.</strong> The card scheme's ruling is final, and the
-  losing party pays its fee ({FEE}) on top of the disputed amount.</li>
+  <li><strong>The clocks are short.</strong> The windows in cycle two are measured in 10–15
+  days, not the 20–30 days of the first cycle.</li>
+  <li><strong>The action owner changes depending on the scheme and the dispute reason.</strong>
+  In most flows the issuer decides whether to escalate. In Visa Allocation (fraud and
+  authorization) disputes, the decision sits with you — and you get only 10 days.</li>
+  <li><strong>Arbitration has a price tag.</strong> The losing party pays the scheme's filing
+  and review fees ({FEE}, in addition to the disputed amount), so the final step is a
+  commercial decision, not just an evidence decision.</li>
 </ol>
-</div>
+<p class="readon">The one-minute summary below gives the plain-English version. The table and
+flow diagrams that follow show the exact steps for each scheme.</p>
 
-<div class="section">
-<h2>Key deadlines</h2>
-<div class="cards">
-  <div class="card"><p class="k">You · New dispute</p><p class="v">20 days</p>
-    <p class="d">to send us your evidence when a dispute arrives</p></div>
-  <div class="card"><p class="k">Issuer · Review</p><p class="v">30 days</p>
-    <p class="d">to respond to the evidence we submit</p></div>
-  <div class="card"><p class="k">You · Escalation request</p><p class="v">5–10 days</p>
-    <p class="d">usually, to ask us to escalate after the issuer rejects our evidence</p></div>
-  <div class="card"><p class="k">Arbitration</p><p class="v">10 or 15 days</p>
-    <p class="d">to escalate: 10 for Visa and Discover / Diners, 15 for Mastercard</p></div>
+<h2>The one-minute summary</h2>
+<div class="summary">
+  <div class="sum">
+    <p class="eyebrow">Visa Collaboration, Mastercard, Discover / Diners</p>
+    <ol class="points small">
+      <li><strong>Initial chargeback</strong> — the cardholder's issuing bank initiates the
+      dispute.</li>
+      <li><strong>Our representment</strong> — we challenge the dispute with your
+      evidence.</li>
+      <li><strong>Issuer rejection</strong> — the issuing bank rejects the evidence, in what is
+      called the “pre-arbitration” stage.</li>
+      <li><strong>Formal rebuttal</strong> — we formally escalate and challenge their rejection
+      (the “pre-arbitration response”).</li>
+      <li><strong>Final resolution</strong> — the issuing bank must then either accept
+      liability or take the case to formal arbitration with the card scheme (e.g. Visa), where
+      the losing party incurs a fee ({FEE}).</li>
+    </ol>
+  </div>
+  <div class="sum">
+    <p class="eyebrow">Visa Allocation (fraud and authorization disputes)</p>
+    <ol class="points small">
+      <li><strong>Initial chargeback</strong> — the cardholder's issuing bank initiates the
+      dispute.</li>
+      <li><strong>Our representment</strong> — we challenge the dispute with your evidence, in
+      what is called raising the “pre-arbitration”.</li>
+      <li><strong>Issuer rejection</strong> — the issuing bank rejects the evidence, in what is
+      called the “pre-arbitration response”.</li>
+      <li><strong>Final resolution</strong> — the merchant must then either accept liability or
+      take the case to formal arbitration with the card scheme, where the losing party incurs
+      a fee ({FEE}).</li>
+    </ol>
+  </div>
 </div>
-</div>
+<div class="diff"><strong>The single most important difference:</strong> in Allocation there
+is no “formal rebuttal” step for you, because your pre-arbitration was the rebuttal. Once the
+issuer rejects it, the next move is yours — escalate to arbitration or accept liability.</div>
 
 <div class="page-break"></div>
 {logo}
 <div class="section">
-<h2>At a glance</h2>
-<p class="intro2">The same stages go by different names in each scheme. This is what each one
-is called, the status you'll see in your dispute reports, and who decides whether the case
-goes to arbitration.</p>
+<h2>Key deadlines</h2>
+<div class="cards">
+  <div class="card"><p class="k">You · New dispute</p><p class="v">20 days</p>
+    <p class="d">to send us your evidence</p></div>
+  <div class="card"><p class="k">Issuer · Review</p><p class="v">30 days</p>
+    <p class="d">to respond to our evidence</p></div>
+  <div class="card"><p class="k">Issuer · Arbitration</p><p class="v">10–15 days</p>
+    <p class="d">to decide on arbitration after our pre-arbitration response (15 for
+    Mastercard)</p></div>
+  <div class="card"><p class="k">You · Visa Allocation</p><p class="v">10 days</p>
+    <p class="d">to decide on arbitration after the issuer's pre-arbitration response</p></div>
+</div>
+</div>
+
+<div class="section">
+<h2>At a glance: the decision owner, by scheme</h2>
+<p class="intro2">For each scheme: what each stage is called, the status you'll see in your
+dispute reports, and who decides whether the case goes to arbitration.</p>
 <table>
   <tr>
     <th>Stage</th>
@@ -653,36 +663,22 @@ goes to arbitration.</p>
       <small>It has 30 days to review</small></td>
       <td class="term">Pre-arbitration</td><td class="term">Pre-arbitration</td>
       <td class="term">Pre-arbitration response</td></tr>
-  <tr><td>We challenge the rejection<small>You usually have 5–10 days to ask us</small></td>
+  <tr><td>We challenge the rejection</td>
       <td class="term">Pre-arbitration response</td>
       <td class="term">Pre-arbitration response</td>
-      <td class="none">No such stage</td></tr>
+      <td class="term">Arbitration<small>Filed directly with Visa</small></td></tr>
   <tr class="key"><td><strong>Who decides on arbitration</strong></td>
-      <td>Issuer</td><td>Issuer</td><td class="you">You and Checkout</td></tr>
+      <td>Issuer</td><td>Issuer</td><td class="you">You</td></tr>
   <tr class="key"><td><strong>Time to decide</strong></td>
       <td>10 days after our pre-arbitration response</td>
       <td>15 days after our pre-arbitration response</td>
       <td>10 days after the issuer's pre-arbitration response</td></tr>
 </table>
 <p class="note">American Express works differently: it is both the card network and the
-issuer, so there is no pre-arbitration or arbitration stage. Amex's decision is final.</p>
+issuer, so there is no pre-arbitration or arbitration stage.</p>
 
 <div class="codes"><p class="eyebrow">Status codes in your dispute reports</p>
 <dl>{codes}</dl></div>
-</div>
-
-<div class="section">
-<h2>Good to know</h2>
-<ul class="know">
-  <li><strong>Missing a deadline closes the case against whoever missed it.</strong> If we
-  don't hear from you in time, the chargeback stands.</li>
-  <li><strong>Arbitration is final.</strong> The card scheme's ruling is binding, and the
-  losing party pays the arbitration fee ({FEE}).</li>
-  <li><strong>Weigh the cost before escalating.</strong> For a low-value dispute, accepting
-  liability can cost less than losing at arbitration.</li>
-  <li><strong>Dates can change.</strong> Schemes update their rules from time to time. We
-  always confirm the exact deadlines on a live case.</li>
-</ul>
 </div>
 """]
 
