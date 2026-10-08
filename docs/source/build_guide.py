@@ -58,11 +58,12 @@ def _two_cycle_flow(*, slug, title, subtitle, scheme_lane, open_term, response_t
                  body="The issuer raises the dispute"),
             dict(lane=YOU, step=2, code="RPDR", title=response_term,
                  body="We challenge it with your evidence", clock="20 days"),
-            dict(lane=ISSUER, title="Issuer review", body="Accepts or rejects our evidence",
+            dict(lane=ISSUER, title="Issuer review", body="Accepts or rejects your evidence",
                  clock="30 days", end="Accepts → case closed in your favour", end_code="RPDW"),
             dict(lane=ISSUER, step=3, code="RPDL", title="Pre-arbitration",
-                 body="The issuer rejects our evidence",
-                 end="Or you accept → the chargeback stands"),
+                 body="The issuer rejects your evidence. You either accept it, or "
+                      "challenge further",
+                 end="You accept → the chargeback stands"),
             dict(lane=YOU, step=4, title="Pre-arbitration response",
                  body="We challenge the rejection"),
             dict(lane=ISSUER, step=5, title="Arbitration decision",
@@ -76,8 +77,8 @@ def _two_cycle_flow(*, slug, title, subtitle, scheme_lane, open_term, response_t
             ("Our response", response_term, "RPDR",
              "We challenge the dispute with your evidence. You have 20 days to send it to us."),
             ("Issuer rejection", "Pre-arbitration", "RPDL",
-             "The issuer has 30 days to review. If it rejects our evidence, it raises a "
-             "pre-arbitration. You can also choose to accept the chargeback at this point."),
+             "The issuer has 30 days to review. If it rejects your evidence, it raises a "
+             "pre-arbitration. You then either accept it, or challenge it further."),
             ("Formal rebuttal", "Pre-arbitration response", None,
              "We formally challenge the issuer's rejection."),
             ("Final resolution", "Arbitration", None, final_text),
@@ -118,10 +119,10 @@ DIAGRAMS = [
                  body="The issuer raises the dispute"),
             dict(lane=YOU, step=2, code="RPDR", title="Pre-arbitration",
                  body="We initiate it with your evidence", clock="20 days"),
-            dict(lane=ISSUER, title="Issuer review", body="Accepts or rejects our evidence",
+            dict(lane=ISSUER, title="Issuer review", body="Accepts or rejects your evidence",
                  clock="30 days", end="Accepts → case closed in your favour", end_code="RPDW"),
             dict(lane=ISSUER, step=3, code="RPDL", title="Pre-arbitration response",
-                 body="The issuer rejects our evidence"),
+                 body="The issuer rejects your evidence"),
             dict(lane=YOU, step=4, title="Your decision",
                  body="Accept liability or take the case to arbitration", clock="10 days",
                  end="Accept liability → the chargeback stands"),
@@ -136,7 +137,7 @@ DIAGRAMS = [
              "We challenge the dispute with your evidence by initiating a pre-arbitration. "
              "You have 20 days to send it to us."),
             ("Issuer rejection", "Pre-arbitration response", "RPDL",
-             "The issuer has 30 days to review. If it rejects our evidence, it sends a "
+             "The issuer has 30 days to review. If it rejects your evidence, it sends a "
              "pre-arbitration response."),
             ("Final resolution", "Arbitration", None,
              "You decide: accept liability, or take the case to arbitration with Visa, where "
@@ -630,9 +631,9 @@ accept liability.</div>
   <div class="card"><p class="k">You · New dispute</p><p class="v">20 days</p>
     <p class="d">to send us your evidence</p></div>
   <div class="card"><p class="k">Issuer · Review</p><p class="v">30 days</p>
-    <p class="d">to respond to our evidence</p></div>
+    <p class="d">to respond to your evidence</p></div>
   <div class="card"><p class="k">Issuer · Arbitration</p><p class="v">10–15 days</p>
-    <p class="d">to decide on arbitration after our pre-arbitration response (15 for
+    <p class="d">to decide on arbitration after your pre-arbitration response (15 for
     Mastercard)</p></div>
   <div class="card"><p class="k">You · Visa Allocation</p><p class="v">10 days</p>
     <p class="d">to decide on arbitration after the issuer's pre-arbitration response</p></div>
@@ -657,7 +658,7 @@ dispute reports, and who decides whether the case goes to arbitration.</p>
       <small>You have 20 days</small></td>
       <td class="term">Dispute response</td><td class="term">Second presentment</td>
       <td class="term">Pre-arbitration</td></tr>
-  <tr><td>The issuer rejects our evidence<span class="code">RPDL</span>
+  <tr><td>The issuer rejects your evidence<span class="code">RPDL</span>
       <small>It has 30 days to review</small></td>
       <td class="term">Pre-arbitration</td><td class="term">Pre-arbitration</td>
       <td class="term">Pre-arbitration response</td></tr>
@@ -668,8 +669,8 @@ dispute reports, and who decides whether the case goes to arbitration.</p>
   <tr class="key"><td><strong>Who decides on arbitration</strong></td>
       <td>Issuer</td><td>Issuer</td><td class="you">You</td></tr>
   <tr class="key"><td><strong>Time to decide</strong></td>
-      <td>10 days after our pre-arbitration response</td>
-      <td>15 days after our pre-arbitration response</td>
+      <td>10 days after your pre-arbitration response</td>
+      <td>15 days after your pre-arbitration response</td>
       <td>10 days after the issuer's pre-arbitration response</td></tr>
 </table>
 <p class="note">American Express works differently: it is both the card network and the
