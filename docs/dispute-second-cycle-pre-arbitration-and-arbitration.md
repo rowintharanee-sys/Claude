@@ -136,6 +136,11 @@ flowchart TD
         AX1 -->|"Against you"| AXL["❌ <b>LOSS</b><br/>no escalation route,<br/>no arbitration fees"]
     end
 
+    style AL fill:#fdf6e3,stroke:#d9c48a
+    style CO fill:#eef4fa,stroke:#a8c3dd
+    style MC fill:#f3f0fa,stroke:#bdb2dd
+    style DI fill:#edf6f0,stroke:#a9cdb6
+    style AX fill:#f4f5f7,stroke:#c2c7d0
     classDef win fill:#1b7f4d,stroke:#0f5132,color:#ffffff
     classDef loss fill:#a4262c,stroke:#6e1a1e,color:#ffffff
     classDef arb fill:#5b3f9e,stroke:#3d2a6b,color:#ffffff
@@ -194,6 +199,18 @@ flowchart TD
     D -->|Escalate| E["We file <b>Arbitration</b> with Visa"]
     E --> F["Visa issues a binding ruling"]
     F --> G["Losing party pays the<br/>disputed amount + scheme fees<br/>(typically USD 400–800)"]
+
+    classDef merchant fill:#b8860b,stroke:#7a5a07,color:#ffffff
+    classDef issuer fill:#1f5f8b,stroke:#15405e,color:#ffffff
+    classDef win fill:#1b7f4d,stroke:#0f5132,color:#ffffff
+    classDef loss fill:#a4262c,stroke:#6e1a1e,color:#ffffff
+    classDef arb fill:#5b3f9e,stroke:#3d2a6b,color:#ffffff
+    classDef neutral fill:#eef1f5,stroke:#8a94a3,color:#1a1a1a
+    class A,C issuer
+    class B,D,E merchant
+    class W win
+    class L loss
+    class F,G arb
 ```
 
 ### Stage-by-stage
@@ -240,6 +257,18 @@ flowchart TD
     G -->|Escalates| H["Issuer files <b>Arbitration</b> with Visa"]
     H --> I["Visa issues a binding ruling"]
     I --> J["Losing party pays the<br/>disputed amount + scheme fees<br/>(typically USD 400–800)"]
+
+    classDef merchant fill:#b8860b,stroke:#7a5a07,color:#ffffff
+    classDef issuer fill:#1f5f8b,stroke:#15405e,color:#ffffff
+    classDef win fill:#1b7f4d,stroke:#0f5132,color:#ffffff
+    classDef loss fill:#a4262c,stroke:#6e1a1e,color:#ffffff
+    classDef arb fill:#5b3f9e,stroke:#3d2a6b,color:#ffffff
+    classDef neutral fill:#eef1f5,stroke:#8a94a3,color:#1a1a1a
+    class A,C,D,G,H issuer
+    class B,E,F merchant
+    class W,W2 win
+    class L loss
+    class I,J arb
 ```
 
 ### Stage-by-stage
@@ -284,6 +313,18 @@ flowchart TD
     G -->|Escalates| H["Issuer files an <b>Arbitration Case</b><br/>with Mastercard"]
     H --> I["Mastercard issues a binding ruling"]
     I --> J["Losing party pays the<br/>disputed amount + scheme fees<br/>(typically USD 400–800)"]
+
+    classDef merchant fill:#b8860b,stroke:#7a5a07,color:#ffffff
+    classDef issuer fill:#1f5f8b,stroke:#15405e,color:#ffffff
+    classDef win fill:#1b7f4d,stroke:#0f5132,color:#ffffff
+    classDef loss fill:#a4262c,stroke:#6e1a1e,color:#ffffff
+    classDef arb fill:#5b3f9e,stroke:#3d2a6b,color:#ffffff
+    classDef neutral fill:#eef1f5,stroke:#8a94a3,color:#1a1a1a
+    class A,C,D,G,H issuer
+    class B,E,F merchant
+    class W,W2 win
+    class L loss
+    class I,J arb
 ```
 
 ### Stage-by-stage
@@ -331,6 +372,18 @@ flowchart TD
     G -->|Escalates| H["Issuer files <b>Arbitration</b><br/>with Discover"]
     H --> I["Discover issues a binding ruling"]
     I --> J["Losing party pays the<br/>disputed amount + scheme fees<br/>(typically USD 400–800)"]
+
+    classDef merchant fill:#b8860b,stroke:#7a5a07,color:#ffffff
+    classDef issuer fill:#1f5f8b,stroke:#15405e,color:#ffffff
+    classDef win fill:#1b7f4d,stroke:#0f5132,color:#ffffff
+    classDef loss fill:#a4262c,stroke:#6e1a1e,color:#ffffff
+    classDef arb fill:#5b3f9e,stroke:#3d2a6b,color:#ffffff
+    classDef neutral fill:#eef1f5,stroke:#8a94a3,color:#1a1a1a
+    class A,C,D,G,H issuer
+    class B,E,F merchant
+    class W,W2 win
+    class L loss
+    class I,J arb
 ```
 
 ### Stage-by-stage
@@ -363,6 +416,17 @@ flowchart TD
     E --> F{"<b>AMEX DECIDES</b><br/>— and that decision is final"}
     F -->|In your favour| W2["✅ Funds returned"]
     F -->|Against you| L["❌ Chargeback stands<br/>(may be re-raised as a final chargeback)"]
+
+    classDef merchant fill:#b8860b,stroke:#7a5a07,color:#ffffff
+    classDef issuer fill:#1f5f8b,stroke:#15405e,color:#ffffff
+    classDef win fill:#1b7f4d,stroke:#0f5132,color:#ffffff
+    classDef loss fill:#a4262c,stroke:#6e1a1e,color:#ffffff
+    classDef arb fill:#5b3f9e,stroke:#3d2a6b,color:#ffffff
+    classDef neutral fill:#eef1f5,stroke:#8a94a3,color:#1a1a1a
+    class A,C,D,F issuer
+    class B,E merchant
+    class W,W2 win
+    class L loss
 ```
 
 | Stage | Who acts | Notes |
@@ -460,6 +524,17 @@ flowchart TD
     Q3 -->|Yes| E3["Send it within 2–3 business days"]
     Q3 -->|No| E4["Accept — avoids wasted effort"]
     E3 --> F["Then wait: the issuer has<br/>10 days (Visa / Discover)<br/>or 15 days (Mastercard)"]
+
+    classDef merchant fill:#b8860b,stroke:#7a5a07,color:#ffffff
+    classDef issuer fill:#1f5f8b,stroke:#15405e,color:#ffffff
+    classDef win fill:#1b7f4d,stroke:#0f5132,color:#ffffff
+    classDef loss fill:#a4262c,stroke:#6e1a1e,color:#ffffff
+    classDef arb fill:#5b3f9e,stroke:#3d2a6b,color:#ffffff
+    classDef neutral fill:#eef1f5,stroke:#8a94a3,color:#1a1a1a
+    class S,Q1 neutral
+    class A1,A2,Q2,Q3,E1,E3 merchant
+    class A3,F issuer
+    class E2,E4 loss
 ```
 
 ---
