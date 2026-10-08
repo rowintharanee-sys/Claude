@@ -59,6 +59,8 @@ move is yours — escalate to arbitration or accept liability.
 
 ## 3. Who holds the next move — at a glance
 
+### 3a. The decision owner, by scheme
+
 | Scheme / flow | Dispute reasons covered | Who raises pre-arbitration | Who responds to it | **Who decides on arbitration** | Escalation window |
 |---|---|---|---|---|---|
 | **Visa — Allocation** | Fraud (10.x), Authorization (11.x) | **Merchant / acquirer** (this *is* the dispute response) | Issuer | **Merchant / acquirer** | **10 days** from issuer's rejection |
@@ -69,6 +71,89 @@ move is yours — escalate to arbitration or accept liability.
 
 **Rule of thumb:** *Allocation is the only flow where the ball ends up in the merchant's court.
 Everywhere else, after our rebuttal, we wait on the issuer.*
+
+### 3b. The complete map
+
+Every path that can follow an initial dispute outcome, across all five scheme flows. Gold nodes are
+the points where **you** must act; blue nodes are where the **issuer** acts. Visa Allocation is the
+only lane whose final escalation decision is gold.
+
+```mermaid
+%%{init: {"flowchart": {"wrappingWidth": 340, "nodeSpacing": 45, "rankSpacing": 55, "htmlLabels": true}, "themeVariables": {"fontSize": "15px", "fontFamily": "Helvetica, Arial, sans-serif"}} }%%
+flowchart TD
+    START(["<b>Initial dispute raised by the issuer</b>"]) --> EVID["<b>We submit your evidence</b><br/>Visa: Dispute Response · Mastercard: Second Presentment<br/>Discover: Representment · Amex: Representment"]
+    EVID --> FORK{"<b>Which scheme and<br/>reason code?</b>"}
+
+    FORK -->|"Visa 10.x / 11.x"| AL1
+    FORK -->|"Visa 12.x / 13.x"| CO1
+    FORK -->|"Mastercard"| MC1
+    FORK -->|"Discover / Diners"| DI1
+    FORK -->|"American Express"| AX1
+
+    subgraph AL["VISA ALLOCATION — fraud and authorization · MERCHANT holds the escalation right"]
+        direction TB
+        AL1["Our filing <b>is</b> the pre-arbitration<br/><i>no separate rebuttal stage</i>"] --> AL2{"Issuer reviews<br/>⏱ 30 days"}
+        AL2 -->|Accepts| ALW["✅ <b>WIN</b><br/>no scheme fees"]
+        AL2 -->|"Rejects — Pre-Arbitration Response"| AL3{"⚠️ <b>MERCHANT DECIDES</b><br/>⏱ 10 days"}
+        AL3 -->|"Accept liability"| ALL["❌ <b>LOSS</b><br/>no scheme fees"]
+        AL3 -->|"We file Arbitration"| ALA["⚖️ <b>Scheme ruling</b><br/>loser pays USD 400–800"]
+    end
+
+    subgraph CO["VISA COLLABORATION — processing and consumer disputes · ISSUER holds the escalation right"]
+        direction TB
+        CO1{"Issuer reviews<br/>⏱ 30 days"}
+        CO1 -->|Accepts| COW["✅ <b>WIN</b>"]
+        CO1 -->|"Rejects — raises Pre-Arbitration"| CO2["<b>We file the Pre-Arbitration Response</b><br/>your formal rebuttal · ⏱ 30 days"]
+        CO2 --> CO3{"<b>ISSUER DECIDES</b><br/>⏱ 10 days"}
+        CO3 -->|"Accepts liability"| COW2["✅ <b>WIN</b><br/>no scheme fees"]
+        CO3 -->|"Issuer files Arbitration"| COA["⚖️ <b>Scheme ruling</b><br/>loser pays USD 400–800"]
+    end
+
+    subgraph MC["MASTERCARD — all reason codes · ISSUER holds the escalation right"]
+        direction TB
+        MC1{"Issuer reviews<br/>⏱ 45 days"}
+        MC1 -->|Accepts| MCW["✅ <b>WIN</b>"]
+        MC1 -->|"Rejects — raises Pre-Arbitration"| MC2["<b>We file the Pre-Arbitration Response</b><br/>⚠️ ⏱ only 10 days — silence = loss"]
+        MC2 --> MC3{"<b>ISSUER DECIDES</b><br/>⏱ 15 days"}
+        MC3 -->|"Accepts liability"| MCW2["✅ <b>WIN</b><br/>no scheme fees"]
+        MC3 -->|"Issuer files Arbitration Case"| MCA["⚖️ <b>Scheme ruling</b><br/>loser pays USD 400–800"]
+    end
+
+    subgraph DI["DISCOVER / DINERS — all reason codes · ISSUER holds the escalation right"]
+        direction TB
+        DI1{"Issuer reviews<br/>⏱ 30 days"}
+        DI1 -->|Accepts| DIW["✅ <b>WIN</b>"]
+        DI1 -->|"Rejects — raises Pre-Arbitration"| DI2["<b>We file the Pre-Arbitration Response</b><br/>⏱ 30 days"]
+        DI2 --> DI3{"<b>ISSUER DECIDES</b><br/>⏱ 10 days"}
+        DI3 -->|"Accepts liability"| DIW2["✅ <b>WIN</b><br/>no scheme fees"]
+        DI3 -->|"Issuer files Arbitration"| DIA["⚖️ <b>Scheme ruling</b><br/>loser pays USD 400–800"]
+    end
+
+    subgraph AX["AMERICAN EXPRESS — three-party network · NO second cycle exists"]
+        direction TB
+        AX1{"<b>Amex adjudicates</b><br/>its decision is final"}
+        AX1 -->|"In your favour"| AXW["✅ <b>WIN</b>"]
+        AX1 -->|"Against you"| AXL["❌ <b>LOSS</b><br/>no escalation route,<br/>no arbitration fees"]
+    end
+
+    classDef win fill:#1b7f4d,stroke:#0f5132,color:#ffffff
+    classDef loss fill:#a4262c,stroke:#6e1a1e,color:#ffffff
+    classDef arb fill:#5b3f9e,stroke:#3d2a6b,color:#ffffff
+    classDef merchant fill:#b8860b,stroke:#7a5a07,color:#ffffff
+    classDef issuer fill:#1f5f8b,stroke:#15405e,color:#ffffff
+    classDef start fill:#333333,stroke:#111111,color:#ffffff
+
+    class ALW,COW,COW2,MCW,MCW2,DIW,DIW2,AXW win
+    class ALL,AXL loss
+    class ALA,COA,MCA,DIA arb
+    class AL3,AL1,CO2,MC2,DI2 merchant
+    class AL2,CO1,CO3,MC1,MC3,DI1,DI3,AX1 issuer
+    class START,EVID,FORK start
+```
+
+> A rendered, print-ready version of this map and of every per-scheme diagram below is in
+> [`dispute-flow-diagrams.html`](./dispute-flow-diagrams.html) — open it in a browser, or print it
+> to PDF to send on.
 
 ---
 
