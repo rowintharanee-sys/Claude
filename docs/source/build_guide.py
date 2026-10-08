@@ -61,10 +61,10 @@ def _two_cycle_flow(*, slug, title, subtitle, scheme_lane, open_term, response_t
             dict(lane=ISSUER, title="Issuer review", body="Accepts or rejects our evidence",
                  clock="30 days", end="Accepts → case closed in your favour", end_code="RPDW"),
             dict(lane=ISSUER, step=3, code="RPDL", title="Pre-arbitration",
-                 body="The issuer rejects our evidence"),
-            dict(lane=YOU, step=4, title="Pre-arbitration response",
-                 body="We challenge the rejection",
+                 body="The issuer rejects our evidence",
                  end="Or you accept → the chargeback stands"),
+            dict(lane=YOU, step=4, title="Pre-arbitration response",
+                 body="We challenge the rejection"),
             dict(lane=ISSUER, step=5, title="Arbitration decision",
                  body="Accepts liability or takes the case to arbitration",
                  clock=escalate_days, end="Accepts liability → case closed in your favour"),
@@ -77,10 +77,9 @@ def _two_cycle_flow(*, slug, title, subtitle, scheme_lane, open_term, response_t
              "We challenge the dispute with your evidence. You have 20 days to send it to us."),
             ("Issuer rejection", "Pre-arbitration", "RPDL",
              "The issuer has 30 days to review. If it rejects our evidence, it raises a "
-             "pre-arbitration."),
+             "pre-arbitration. You can also choose to accept the chargeback at this point."),
             ("Formal rebuttal", "Pre-arbitration response", None,
-             "We formally challenge the rejection. You can also choose to accept the "
-             "chargeback at this point."),
+             "We formally challenge the issuer's rejection."),
             ("Final resolution", "Arbitration", None, final_text),
         ],
     )
@@ -118,7 +117,7 @@ DIAGRAMS = [
             dict(lane=ISSUER, step=1, code="ADJM", title="Dispute",
                  body="The issuer raises the dispute"),
             dict(lane=YOU, step=2, code="RPDR", title="Pre-arbitration",
-                 body="We raise it with your evidence", clock="20 days"),
+                 body="We initiate it with your evidence", clock="20 days"),
             dict(lane=ISSUER, title="Issuer review", body="Accepts or rejects our evidence",
                  clock="30 days", end="Accepts → case closed in your favour", end_code="RPDW"),
             dict(lane=ISSUER, step=3, code="RPDL", title="Pre-arbitration response",
@@ -134,7 +133,7 @@ DIAGRAMS = [
             ("Initial chargeback", "Dispute", "ADJM",
              "The cardholder's issuing bank raises a fraud or authorization dispute."),
             ("Our response", "Pre-arbitration", "RPDR",
-             "We challenge the dispute with your evidence by raising a pre-arbitration. "
+             "We challenge the dispute with your evidence by initiating a pre-arbitration. "
              "You have 20 days to send it to us."),
             ("Issuer rejection", "Pre-arbitration response", "RPDL",
              "The issuer has 30 days to review. If it rejects our evidence, it sends a "
@@ -149,11 +148,9 @@ DIAGRAMS = [
 
 STATUS_CODES = [
     ("ADJM", "Chargeback received"),
-    ("RPDR", "Represented: we submitted your evidence. For Visa Allocation, we initiated "
-             "pre-arbitration"),
+    ("RPDR", "Represented: we submitted your evidence"),
     ("RPDW", "Representment won"),
-    ("RPDL", "Representment lost: the issuer's pre-arbitration. For Visa Allocation, it "
-             "refers to the issuer's pre-arbitration response"),
+    ("RPDL", "Representment lost"),
 ]
 
 # ----------------------------------------------------------------------------------------
@@ -228,7 +225,7 @@ P_FS, P_LH = 2.65, 3.3      # end-of-case pill
 L_FS = 2.9                  # lane label
 BX, BOX_TOP, TB_GAP, BOX_BOT = 2.5, 4.4, 1.0, 3.2
 PX, PY = 2.2, 1.7
-LANE_TOP, LANE_BOT, PILL_GAP = 4.3, 3.4, 3.7
+LANE_TOP, LANE_BOT, PILL_GAP = 4.3, 3.4, 4.8
 
 
 def _t(x, y, s, size, weight=400, fill=INK, anchor="start", family="sans", spacing=0.0):
@@ -575,8 +572,8 @@ after that first outcome — the second dispute cycle, made up of pre-arbitratio
 arbitration.</p>
 <p>This is where a large share of recoverable revenue is won or lost, for three reasons:</p>
 <ol class="points">
-  <li><strong>The clocks are short.</strong> The windows in cycle two are measured in 10–15
-  days, not the 20–30 days of the first cycle.</li>
+  <li><strong>The clocks are short.</strong> The windows in the second dispute cycle are measured
+  in 10–15 days, not the initial 20–30 days of the first cycle.</li>
   <li><strong>The action owner changes depending on the scheme and the dispute reason.</strong>
   In most flows the issuer decides whether to escalate. In Visa Allocation (fraud and
   authorization) disputes, the decision sits with you — and you get only 10 days.</li>
@@ -584,7 +581,7 @@ arbitration.</p>
   and review fees ({FEE}, in addition to the disputed amount), so the final step is a
   commercial decision, not just an evidence decision.</li>
 </ol>
-<p class="readon">The one-minute summary below gives the plain-English version. The table and
+<p class="readon">The one-minute summary below sets out how each flow works. The table and
 flow diagrams that follow show the exact steps for each scheme.</p>
 
 <h2>The one-minute summary</h2>
@@ -611,7 +608,7 @@ flow diagrams that follow show the exact steps for each scheme.</p>
       <li><strong>Initial chargeback</strong> — the cardholder's issuing bank initiates the
       dispute.</li>
       <li><strong>Our representment</strong> — we challenge the dispute with your evidence, in
-      what is called raising the “pre-arbitration”.</li>
+      what is called initiating the “pre-arbitration”.</li>
       <li><strong>Issuer rejection</strong> — the issuing bank rejects the evidence, in what is
       called the “pre-arbitration response”.</li>
       <li><strong>Final resolution</strong> — the merchant must then either accept liability or
@@ -621,8 +618,9 @@ flow diagrams that follow show the exact steps for each scheme.</p>
   </div>
 </div>
 <div class="diff"><strong>The single most important difference:</strong> in Allocation there
-is no “formal rebuttal” step for you, because your pre-arbitration was the rebuttal. Once the
-issuer rejects it, the next move is yours — escalate to arbitration or accept liability.</div>
+is no formal rebuttal to the issuer. Instead, the case goes straight to arbitration. Once the
+issuer rejects your pre-arbitration, the next move is yours — escalate to arbitration or
+accept liability.</div>
 
 <div class="page-break"></div>
 {logo}
