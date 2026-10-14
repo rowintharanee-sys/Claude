@@ -1,7 +1,6 @@
 4. Reason Code: FRAUD
-(Visa 10.4 – Other Fraud – Card-Absent Environment)
 
-While the merchant provides a detailed fraud summary for these disputes (AVS result, IP analysis, customer details and purchase history from their third-party fraud provider), the evidence is not structured against the remedies accepted by Visa for this reason code (sample below). In particular:
+While the merchant provides a detailed fraud summary for these disputes (AVS result, IP analysis, customer details and purchase history from their third-party fraud provider), the evidence does not clearly demonstrate that the cardholder participated in or benefited from the transaction (sample below). In particular:
 
 * Purchase history is shown only as totals (e.g. "Number of purchases in polymarket.com: 55") rather than the individual prior transactions the issuer can verify.
 
@@ -20,7 +19,7 @@ While the merchant provides a detailed fraud summary for these disputes (AVS res
 
 Recommendation:
 
-Where the disputed transaction is not covered by 3DS or does not qualify under CE 3.0, the merchant can still defend the dispute by providing compelling evidence that the cardholder took part in the transaction or benefited from it:
+Outside of the remedies above, card schemes allow merchants to provide compelling evidence in an attempt to recover funds. This evidence should demonstrate that the cardholder participated in the transaction or benefited from it:
 
 * Identity Verification (KYC): Screenshots from your internal platform showing the account creation date (before the disputed transaction), the KYC verification result and date, and that the verified name matches the cardholder name. Sensitive personal data should be masked.
 
@@ -45,4 +44,4 @@ Where the disputed transaction is not covered by 3DS or does not qualify under C
 
 * Supporting Information: AVS and CVV2 match results and the fraud provider's decision may be included as supporting information. However, they should not be the main basis of the defence.
 
-Please note that all evidence should come from your own platform records (e.g. screenshots or system logs from your internal admin interface, clearly showing the User ID and timestamps), rather than only a written summary or third-party data. We also recommend starting the response with a short summary stating the remedy being claimed, followed by the supporting evidence in the order listed above.
+Please note that all evidence should come from your own platform records (e.g. screenshots or system logs from your internal admin interface, clearly showing the User ID and timestamps), rather than only a written summary or third-party data. We also recommend starting the response with a short summary of why the transaction is not fraudulent, followed by the supporting evidence in the order listed above.
